@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Enemy — Tales From The Spiral{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1> {{ action }} Enemy</h1>
+    <div class="subtitle">{% if action == 'Add' %}Summon a new adversary{% else %}Modify enemy stats{% endif %}</div>
+  </div>
+  <a href="{{ url_for('enemies') }}" class="btn btn-ghost">← Back to Enemies</a>
+</div>
+
+<div class="form-card">
+  <form method="POST">
+    <div class="form-group">
+      <label for="enemyID">Enemy ID</label>
+      <input type="text" id="enemyID" name="enemyID"
+             value="{{ enemy.enemyID if enemy else '' }}"
+             {% if action == 'Edit' %}readonly{% endif %}
+             placeholder="e.g. Goblin_Scout" required/>
+    </div>
+    <div class="form-group">
+      <label for="hp">HP</label>
+      <input type="number" id="hp" name="hp"
+             value="{{ enemy.hp if enemy else '' }}"
+             min="1" placeholder="e.g. 50" required/>
+    </div>
+    <div class="form-group">
+      <label for="damage">Damage</label>
+      <input type="number" id="damage" name="damage"
+             value="{{ enemy.damage if enemy else '' }}"
+             min="0" placeholder="e.g. 10" required/>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-gold">{{ action }} Enemy</button>
+      <a href="{{ url_for('enemies') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

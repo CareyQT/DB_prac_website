@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} NPC — Tales From The Spiral{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1> {{ action }} NPC</h1>
+    <div class="subtitle">{% if action == 'Add' %}Introduce a new character{% else %}Modify character details{% endif %}</div>
+  </div>
+  <a href="{{ url_for('npcs') }}" class="btn btn-ghost">← Back to NPCs</a>
+</div>
+
+<div class="form-card">
+  <form method="POST">
+    <div class="form-group">
+      <label for="npcID">NPC ID</label>
+      <input type="text" id="npcID" name="npcID"
+             value="{{ npc.npcID if npc else '' }}"
+             {% if action == 'Edit' %}readonly{% endif %}
+             placeholder="e.g. Lena_the_Merchant" required/>
+    </div>
+    <div class="form-group">
+      <label for="hp">HP</label>
+      <input type="number" id="hp" name="hp"
+             value="{{ npc.hp if npc else '' }}"
+             min="1" placeholder="e.g. 40" required/>
+    </div>
+
+    <div class="form-group">
+      <div class="checkbox-row">
+        <input type="checkbox" id="quest" name="quest"
+               {% if npc and npc.quest %}checked{% endif %}/>
+        <label for="quest">Quest Giver</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="checkbox-row">
+        <input type="checkbox" id="shopkeeper" name="shopkeeper"
+               {% if npc and npc.shopkeeper %}checked{% endif %}/>
+        <label for="shopkeeper">Shopkeeper</label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="areaID">Area</label>
+      <select id="areaID" name="areaID" required>
+        <option value="">— Select an area —</option>
+        {% for area in areas %}
+          <option value="{{ area.areaID }}"
+            {% if npc and npc.areaID == area.areaID %}selected{% endif %}>
+            {{ area.areaID }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="enemyID">Enemy Type (optional)</label>
+      <select id="enemyID" name="enemyID">
+        <option value="">— None —</option>
+        {% for enemy in enemies %}
+          <option value="{{ enemy.enemyID }}"
+            {% if npc and npc.enemyID == enemy.enemyID %}selected{% endif %}>
+            {{ enemy.enemyID }}
+          </option>
+        {% endfor %}
+      </select>
+      <div class="form-hint">If this NPC is also a hostile creature, select its enemy type.</div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-gold">{{ action }} NPC</button>
+      <a href="{{ url_for('npcs') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

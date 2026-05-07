@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Tales From The Spiral — Database{% endblock %}
+{% block content %}
+
+<div class="hero">
+  <div class="hero-title">Tales From The Spiral</div>
+  <div class="hero-sub">World Database Administration</div>
+  <div class="hero-divider"></div>
+  <p style="color:var(--text-dim); max-width:520px; margin:0 auto; font-size:1.05rem; line-height:1.7;">
+    Manage the entities, creatures, and locations that make up the Spiral. Use the navigation above or the cards below to browse and modify records.
+  </p>
+</div>
+
+<div class="section-label" style="margin-top:2.5rem;">Core Entities</div>
+<div class="card-grid">
+  <a href="{{ url_for('areas') }}" class="card">
+    
+    <h3>Areas</h3>
+    <p>Regions of the Spiral. Each has a difficulty level and may contain enemies and hazards.</p>
+  </a>
+  <a href="{{ url_for('hazards') }}" class="card">
+    
+    <h3>Hazards</h3>
+    <p>Environmental dangers that deal damage to those who pass through an area.</p>
+  </a>
+  <a href="{{ url_for('enemies') }}" class="card">
+   
+    <h3>Enemies</h3>
+    <p>Hostile creatures with HP and attack damage that spawn in areas.</p>
+  </a>
+  <a href="{{ url_for('abilities') }}" class="card">
+   
+    <h3>Abilities</h3>
+    <p>Skills and spells used by enemies and NPCs. Damage may be null for utility abilities.</p>
+  </a>
+  <a href="{{ url_for('npcs') }}" class="card">
+   
+    <h3>NPCs</h3>
+    <p>Non-player characters — merchants, quest-givers, and more, each located in an area.</p>
+  </a>
+</div>
+
+<div class="section-label" style="margin-top:2.5rem;">Relationship Tables</div>
+<div class="card-grid">
+  <a href="{{ url_for('area_hazards') }}" class="card">
+    
+    <h3>Area ↔ Hazards</h3>
+    <p>Which hazards appear in which areas.</p>
+  </a>
+  <a href="{{ url_for('area_enemies') }}" class="card">
+    
+    <h3>Area ↔ Enemies</h3>
+    <p>Which enemy types spawn in which areas.</p>
+  </a>
+  <a href="{{ url_for('enemy_abilities') }}" class="card">
+    
+    <h3>Enemy ↔ Abilities</h3>
+    <p>Which abilities can be used by which enemies.</p>
+  </a>
+  <a href="{{ url_for('npc_abilities') }}" class="card">
+    
+    <h3>NPC ↔ Abilities</h3>
+    <p>Which abilities are available to which NPCs.</p>
+  </a>
+</div>
+
+{% endblock %}

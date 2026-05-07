@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}NPCs — Tales From The Spiral{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1> NPCs</h1>
+    <div class="subtitle">Denizens and characters of the Spiral</div>
+  </div>
+  <a href="{{ url_for('npcs_add') }}" class="btn btn-gold">+ Add NPC</a>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>NPC ID</th>
+        <th>HP</th>
+        <th>Quest</th>
+        <th>Shopkeeper</th>
+        <th>Area</th>
+        <th>Enemy Type</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for n in npcs %}
+      <tr>
+        <td>{{ n.npcID }}</td>
+        <td><span class="badge badge-hp">❤ {{ n.hp }}</span></td>
+        <td>
+          {% if n.quest %}
+            <span class="badge badge-yes">Yes</span>
+          {% else %}
+            <span class="badge badge-no">No</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if n.shopkeeper %}
+            <span class="badge badge-yes">Yes</span>
+          {% else %}
+            <span class="badge badge-no">No</span>
+          {% endif %}
+        </td>
+        <td>{{ n.areaID }}</td>
+        <td>
+          {% if n.enemyID %}
+            <span class="badge badge-dmg">{{ n.enemyID }}</span>
+          {% else %}
+            <span class="badge badge-null">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="actions">
+            <a href="{{ url_for('npcs_edit', npcID=n.npcID) }}" class="btn btn-teal btn-sm">Edit</a>
+            <form method="POST" action="{{ url_for('npcs_delete', npcID=n.npcID) }}"
+                  onsubmit="return confirm('Delete {{ n.npcID }}?')">
+              <button type="submit" class="btn btn-red btn-sm">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" style="text-align:center; color:var(--text-dim); padding:2rem;">No NPCs found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

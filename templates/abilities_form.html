@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Ability — Tales From The Spiral{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1> {{ action }} Ability</h1>
+    <div class="subtitle">{% if action == 'Add' %}Define a new skill or spell{% else %}Modify ability stats{% endif %}</div>
+  </div>
+  <a href="{{ url_for('abilities') }}" class="btn btn-ghost">← Back to Abilities</a>
+</div>
+
+<div class="form-card">
+  <form method="POST">
+    <div class="form-group">
+      <label for="abilityID">Ability ID</label>
+      <input type="text" id="abilityID" name="abilityID"
+             value="{{ ability.abilityID if ability else '' }}"
+             {% if action == 'Edit' %}readonly{% endif %}
+             placeholder="e.g. Fireball" required/>
+    </div>
+    <div class="form-group">
+      <label for="damage">Damage (optional)</label>
+      <input type="number" id="damage" name="damage"
+             value="{{ ability.damage if ability and ability.damage is not none else '' }}"
+             min="0" placeholder="Leave blank for utility abilities"/>
+      <div class="form-hint">Leave empty for non-damaging abilities like Heal.</div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-gold">{{ action }} Ability</button>
+      <a href="{{ url_for('abilities') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Abilities — Tales From The Spiral{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1> Abilities</h1>
+    <div class="subtitle">Skills and spells wielded across the Spiral</div>
+  </div>
+  <a href="{{ url_for('abilities_add') }}" class="btn btn-gold">+ Add Ability</a>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Ability ID</th>
+        <th>Damage</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in abilities %}
+      <tr>
+        <td>{{ a.abilityID }}</td>
+        <td>
+          {% if a.damage is not none and a.damage != '' %}
+            <span class="badge badge-dmg">⚔ {{ a.damage }}</span>
+          {% else %}
+            <span class="badge badge-null">Utility</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="actions">
+            <a href="{{ url_for('abilities_edit', abilityID=a.abilityID) }}" class="btn btn-teal btn-sm">Edit</a>
+            <form method="POST" action="{{ url_for('abilities_delete', abilityID=a.abilityID) }}"
+                  onsubmit="return confirm('Delete {{ a.abilityID }}?')">
+              <button type="submit" class="btn btn-red btn-sm">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3" style="text-align:center; color:var(--text-dim); padding:2rem;">No abilities found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

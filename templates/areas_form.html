@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Area — Tales From The Spiral{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>{{ action }} Area</h1>
+    <div class="subtitle">{% if action == 'Add' %}Create a new region{% else %}Modify area details{% endif %}</div>
+  </div>
+  <a href="{{ url_for('areas') }}" class="btn btn-ghost">← Back to Areas</a>
+</div>
+
+<div class="form-card">
+  <form method="POST">
+    <div class="form-group">
+      <label for="areaID">Area ID</label>
+      <input type="text" id="areaID" name="areaID"
+             value="{{ area.areaID if area else '' }}"
+             {% if action == 'Edit' %}readonly{% endif %}
+             placeholder="e.g. Whispering_Woods" required/>
+      <div class="form-hint">Unique identifier. Use underscores instead of spaces.</div>
+    </div>
+    <div class="form-group">
+      <label for="areaLevel">Area Level</label>
+      <input type="number" id="areaLevel" name="areaLevel"
+             value="{{ area.areaLevel if area else '' }}"
+             min="1" max="99" placeholder="1–99" required/>
+      <div class="form-hint">Difficulty level of this region.</div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-gold">{{ action }} Area</button>
+      <a href="{{ url_for('areas') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}
