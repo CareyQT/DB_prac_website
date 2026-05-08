@@ -7,8 +7,7 @@ import os
 app = Flask(__name__)
 app.secret_key = 'tales_from_the_spiral_secret'
 
-# --- DB CONNECTION (stub) ---
-# Replace with real credentials when DB is available
+
 def get_db():
     try:
         conn = mysql.connector.connect(
@@ -21,58 +20,6 @@ def get_db():
     except Exception:
         return None
 
-# --- SAMPLE DATA (used when DB is unavailable) ---
-SAMPLE = {
-    'areas': [
-        {'areaID': 'Whispering_Woods', 'areaLevel': 3},
-        {'areaID': 'Sunken_Ruins', 'areaLevel': 7},
-        {'areaID': 'Ironkeep_Village', 'areaLevel': 2},
-    ],
-    'hazards': [
-        {'hazardID': 'Poison_Fog', 'damage': 8},
-        {'hazardID': 'Spike_Trap', 'damage': 12},
-        {'hazardID': 'Falling_Rocks', 'damage': 15},
-    ],
-    'enemies': [
-        {'enemyID': 'Goblin_Scout', 'hp': 35, 'damage': 6},
-        {'enemyID': 'Bone_Warden', 'hp': 60, 'damage': 12},
-        {'enemyID': 'Marsh_Wraith', 'hp': 50, 'damage': 10},
-    ],
-    'abilities': [
-        {'abilityID': 'Quick_Slash', 'damage': 7},
-        {'abilityID': 'Fireball', 'damage': 18},
-        {'abilityID': 'Heal', 'damage': None},
-        {'abilityID': 'Shield_Bash', 'damage': 10},
-    ],
-    'npcs': [
-        {'npcID': 'Lena_the_Merchant', 'hp': 40, 'quest': False, 'shopkeeper': True, 'areaID': 'Ironkeep_Village', 'enemyID': None},
-        {'npcID': 'Brother_Cale', 'hp': 45, 'quest': True, 'shopkeeper': False, 'areaID': 'Whispering_Woods', 'enemyID': None},
-        {'npcID': 'Mira_the_Hunted', 'hp': 38, 'quest': True, 'shopkeeper': False, 'areaID': 'Sunken_Ruins', 'enemyID': 'Marsh_Wraith'},
-    ],
-    'area_hazards': [
-        {'areaID': 'Whispering_Woods', 'hazardID': 'Poison_Fog'},
-        {'areaID': 'Sunken_Ruins', 'hazardID': 'Spike_Trap'},
-        {'areaID': 'Sunken_Ruins', 'hazardID': 'Falling_Rocks'},
-        {'areaID': 'Ironkeep_Village', 'hazardID': 'Spike_Trap'},
-    ],
-    'area_enemies': [
-        {'areaID': 'Whispering_Woods', 'enemyID': 'Goblin_Scout'},
-        {'areaID': 'Sunken_Ruins', 'enemyID': 'Bone_Warden'},
-        {'areaID': 'Sunken_Ruins', 'enemyID': 'Marsh_Wraith'},
-        {'areaID': 'Ironkeep_Village', 'enemyID': 'Goblin_Scout'},
-    ],
-    'enemy_abilities': [
-        {'enemyID': 'Goblin_Scout', 'abilityID': 'Quick_Slash'},
-        {'enemyID': 'Bone_Warden', 'abilityID': 'Shield_Bash'},
-        {'enemyID': 'Marsh_Wraith', 'abilityID': 'Fireball'},
-        {'enemyID': 'Marsh_Wraith', 'abilityID': 'Quick_Slash'},
-    ],
-    'npc_abilities': [
-        {'npcID': 'Lena_the_Merchant', 'abilityID': 'Heal'},
-        {'npcID': 'Brother_Cale', 'abilityID': 'Shield_Bash'},
-        {'npcID': 'Mira_the_Hunted', 'abilityID': 'Fireball'},
-    ],
-}
 
 def query(sql, params=()):
     conn = get_db()
@@ -94,17 +41,15 @@ def execute(sql, params=()):
     conn.close()
     return True
 
-# ─── INDEX ───────────────────────────────────────────────────────────────────
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# ─── AREAS ───────────────────────────────────────────────────────────────────
-
 @app.route('/areas')
 def areas():
-    rows = query("SELECT * FROM Areas ORDER BY areaLevel") or SAMPLE['areas']
+    rows = query("SELECT * FROM Areas ORDER BY areaLevel") or []
     return render_template('areas.html', areas=rows)
 
 @app.route('/areas/add', methods=['GET', 'POST'])
@@ -115,7 +60,7 @@ def areas_add():
         if execute("INSERT INTO Areas (areaID, areaLevel) VALUES (%s, %s)", (areaID, areaLevel)):
             flash(f'Area "{areaID}" added successfully.', 'success')
         else:
-            flash('Could not connect to database. (UI demo mode)', 'warning')
+            flash('Could not connect to database.', 'error')
         return redirect(url_for('areas'))
     return render_template('areas_form.html', action='Add', area=None)
 
@@ -126,10 +71,13 @@ def areas_edit(areaID):
         if execute("UPDATE Areas SET areaLevel=%s WHERE areaID=%s", (areaLevel, areaID)):
             flash(f'Area "{areaID}" updated.', 'success')
         else:
-            flash('Could not connect to database. (UI demo mode)', 'warning')
+            flash('Could not connect to database.', 'error')
         return redirect(url_for('areas'))
     rows = query("SELECT * FROM Areas WHERE areaID=%s", (areaID,))
-    area = rows[0] if rows else next((a for a in SAMPLE['areas'] if a['areaID'] == areaID), None)
+    if not rows:
+        flash('Area not found.', 'error')
+        return redirect(url_for('areas'))
+    area = rows[0]
     return render_template('areas_form.html', action='Edit', area=area)
 
 @app.route('/areas/delete/<areaID>', methods=['POST'])
@@ -137,14 +85,14 @@ def areas_delete(areaID):
     if execute("DELETE FROM Areas WHERE areaID=%s", (areaID,)):
         flash(f'Area "{areaID}" deleted.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('areas'))
 
 # ─── HAZARDS ─────────────────────────────────────────────────────────────────
 
 @app.route('/hazards')
 def hazards():
-    rows = query("SELECT * FROM Hazards ORDER BY damage") or SAMPLE['hazards']
+    rows = query("SELECT * FROM Hazards ORDER BY damage") or []
     return render_template('hazards.html', hazards=rows)
 
 @app.route('/hazards/add', methods=['GET', 'POST'])
@@ -155,7 +103,7 @@ def hazards_add():
         if execute("INSERT INTO Hazards (hazardID, damage) VALUES (%s, %s)", (hid, dmg)):
             flash(f'Hazard "{hid}" added.', 'success')
         else:
-            flash('Could not connect to database. (UI demo mode)', 'warning')
+            flash('Could not connect to database.', 'error')
         return redirect(url_for('hazards'))
     return render_template('hazards_form.html', action='Add', hazard=None)
 
@@ -166,10 +114,13 @@ def hazards_edit(hazardID):
         if execute("UPDATE Hazards SET damage=%s WHERE hazardID=%s", (dmg, hazardID)):
             flash(f'Hazard "{hazardID}" updated.', 'success')
         else:
-            flash('Could not connect to database. (UI demo mode)', 'warning')
+            flash('Could not connect to database.', 'error')
         return redirect(url_for('hazards'))
     rows = query("SELECT * FROM Hazards WHERE hazardID=%s", (hazardID,))
-    hazard = rows[0] if rows else next((h for h in SAMPLE['hazards'] if h['hazardID'] == hazardID), None)
+    if not rows:
+        flash('Hazard not found.', 'error')
+        return redirect(url_for('hazards'))
+    hazard = rows[0]
     return render_template('hazards_form.html', action='Edit', hazard=hazard)
 
 @app.route('/hazards/delete/<hazardID>', methods=['POST'])
@@ -177,14 +128,14 @@ def hazards_delete(hazardID):
     if execute("DELETE FROM Hazards WHERE hazardID=%s", (hazardID,)):
         flash(f'Hazard "{hazardID}" deleted.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('hazards'))
 
 # ─── ENEMIES ─────────────────────────────────────────────────────────────────
 
 @app.route('/enemies')
 def enemies():
-    rows = query("SELECT * FROM Enemies ORDER BY hp") or SAMPLE['enemies']
+    rows = query("SELECT * FROM Enemies ORDER BY hp") or []
     return render_template('enemies.html', enemies=rows)
 
 @app.route('/enemies/add', methods=['GET', 'POST'])
@@ -196,7 +147,7 @@ def enemies_add():
         if execute("INSERT INTO Enemies (enemyID, hp, damage) VALUES (%s, %s, %s)", (eid, hp, dmg)):
             flash(f'Enemy "{eid}" added.', 'success')
         else:
-            flash('Could not connect to database. (UI demo mode)', 'warning')
+            flash('Could not connect to database.', 'error')
         return redirect(url_for('enemies'))
     return render_template('enemies_form.html', action='Add', enemy=None)
 
@@ -208,10 +159,13 @@ def enemies_edit(enemyID):
         if execute("UPDATE Enemies SET hp=%s, damage=%s WHERE enemyID=%s", (hp, dmg, enemyID)):
             flash(f'Enemy "{enemyID}" updated.', 'success')
         else:
-            flash('Could not connect to database. (UI demo mode)', 'warning')
+            flash('Could not connect to database.', 'error')
         return redirect(url_for('enemies'))
     rows = query("SELECT * FROM Enemies WHERE enemyID=%s", (enemyID,))
-    enemy = rows[0] if rows else next((e for e in SAMPLE['enemies'] if e['enemyID'] == enemyID), None)
+    if not rows:
+        flash('Enemy not found.', 'error')
+        return redirect(url_for('enemies'))
+    enemy = rows[0]
     return render_template('enemies_form.html', action='Edit', enemy=enemy)
 
 @app.route('/enemies/delete/<enemyID>', methods=['POST'])
@@ -219,14 +173,14 @@ def enemies_delete(enemyID):
     if execute("DELETE FROM Enemies WHERE enemyID=%s", (enemyID,)):
         flash(f'Enemy "{enemyID}" deleted.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('enemies'))
 
 # ─── ABILITIES ────────────────────────────────────────────────────────────────
 
 @app.route('/abilities')
 def abilities():
-    rows = query("SELECT * FROM Abilities ORDER BY abilityID") or SAMPLE['abilities']
+    rows = query("SELECT * FROM Abilities ORDER BY abilityID") or []
     return render_template('abilities.html', abilities=rows)
 
 @app.route('/abilities/add', methods=['GET', 'POST'])
@@ -237,7 +191,7 @@ def abilities_add():
         if execute("INSERT INTO Abilities (abilityID, damage) VALUES (%s, %s)", (aid, dmg)):
             flash(f'Ability "{aid}" added.', 'success')
         else:
-            flash('Could not connect to database. (UI demo mode)', 'warning')
+            flash('Could not connect to database.', 'error')
         return redirect(url_for('abilities'))
     return render_template('abilities_form.html', action='Add', ability=None)
 
@@ -248,10 +202,13 @@ def abilities_edit(abilityID):
         if execute("UPDATE Abilities SET damage=%s WHERE abilityID=%s", (dmg, abilityID)):
             flash(f'Ability "{abilityID}" updated.', 'success')
         else:
-            flash('Could not connect to database. (UI demo mode)', 'warning')
+            flash('Could not connect to database.', 'error')
         return redirect(url_for('abilities'))
     rows = query("SELECT * FROM Abilities WHERE abilityID=%s", (abilityID,))
-    ability = rows[0] if rows else next((a for a in SAMPLE['abilities'] if a['abilityID'] == abilityID), None)
+    if not rows:
+        flash('Ability not found.', 'error')
+        return redirect(url_for('abilities'))
+    ability = rows[0]
     return render_template('abilities_form.html', action='Edit', ability=ability)
 
 @app.route('/abilities/delete/<abilityID>', methods=['POST'])
@@ -259,20 +216,20 @@ def abilities_delete(abilityID):
     if execute("DELETE FROM Abilities WHERE abilityID=%s", (abilityID,)):
         flash(f'Ability "{abilityID}" deleted.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('abilities'))
 
 # ─── NPCs ────────────────────────────────────────────────────────────────────
 
 @app.route('/npcs')
 def npcs():
-    rows = query("SELECT * FROM NPCs ORDER BY npcID") or SAMPLE['npcs']
+    rows = query("SELECT * FROM NPCs ORDER BY npcID") or []
     return render_template('npcs.html', npcs=rows)
 
 @app.route('/npcs/add', methods=['GET', 'POST'])
 def npcs_add():
-    areas = query("SELECT areaID FROM Areas") or SAMPLE['areas']
-    enemies = query("SELECT enemyID FROM Enemies") or SAMPLE['enemies']
+    areas = query("SELECT areaID FROM Areas") or []
+    enemies = query("SELECT enemyID FROM Enemies") or []
     if request.method == 'POST':
         nid = request.form['npcID']
         hp = request.form['hp']
@@ -284,14 +241,14 @@ def npcs_add():
                    (nid, hp, quest, shopkeeper, areaID, enemyID)):
             flash(f'NPC "{nid}" added.', 'success')
         else:
-            flash('Could not connect to database. (UI demo mode)', 'warning')
+            flash('Could not connect to database.', 'error')
         return redirect(url_for('npcs'))
     return render_template('npcs_form.html', action='Add', npc=None, areas=areas, enemies=enemies)
 
 @app.route('/npcs/edit/<npcID>', methods=['GET', 'POST'])
 def npcs_edit(npcID):
-    areas = query("SELECT areaID FROM Areas") or SAMPLE['areas']
-    enemies = query("SELECT enemyID FROM Enemies") or SAMPLE['enemies']
+    areas = query("SELECT areaID FROM Areas") or []
+    enemies = query("SELECT enemyID FROM Enemies") or []
     if request.method == 'POST':
         hp = request.form['hp']
         quest = 1 if request.form.get('quest') else 0
@@ -302,10 +259,13 @@ def npcs_edit(npcID):
                    (hp, quest, shopkeeper, areaID, enemyID, npcID)):
             flash(f'NPC "{npcID}" updated.', 'success')
         else:
-            flash('Could not connect to database. (UI demo mode)', 'warning')
+            flash('Could not connect to database.', 'error')
         return redirect(url_for('npcs'))
     rows = query("SELECT * FROM NPCs WHERE npcID=%s", (npcID,))
-    npc = rows[0] if rows else next((n for n in SAMPLE['npcs'] if n['npcID'] == npcID), None)
+    if not rows:
+        flash('NPC not found.', 'error')
+        return redirect(url_for('npcs'))
+    npc = rows[0]
     return render_template('npcs_form.html', action='Edit', npc=npc, areas=areas, enemies=enemies)
 
 @app.route('/npcs/delete/<npcID>', methods=['POST'])
@@ -313,16 +273,16 @@ def npcs_delete(npcID):
     if execute("DELETE FROM NPCs WHERE npcID=%s", (npcID,)):
         flash(f'NPC "{npcID}" deleted.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('npcs'))
 
 # ─── INTERSECTION TABLES ──────────────────────────────────────────────────────
 
 @app.route('/area_hazards')
 def area_hazards():
-    rows = query("SELECT * FROM Area_Hazards ORDER BY areaID") or SAMPLE['area_hazards']
-    areas = query("SELECT areaID FROM Areas") or SAMPLE['areas']
-    hazards = query("SELECT hazardID FROM Hazards") or SAMPLE['hazards']
+    rows = query("SELECT * FROM Area_Hazards ORDER BY areaID") or []
+    areas = query("SELECT areaID FROM Areas") or []
+    hazards = query("SELECT hazardID FROM Hazards") or []
     return render_template('area_hazards.html', rows=rows, areas=areas, hazards=hazards)
 
 @app.route('/area_hazards/add', methods=['POST'])
@@ -332,7 +292,7 @@ def area_hazards_add():
     if execute("INSERT INTO Area_Hazards (areaID, hazardID) VALUES (%s, %s)", (areaID, hazardID)):
         flash('Link added.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('area_hazards'))
 
 @app.route('/area_hazards/delete', methods=['POST'])
@@ -342,14 +302,14 @@ def area_hazards_delete():
     if execute("DELETE FROM Area_Hazards WHERE areaID=%s AND hazardID=%s", (areaID, hazardID)):
         flash('Link removed.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('area_hazards'))
 
 @app.route('/area_enemies')
 def area_enemies():
-    rows = query("SELECT * FROM Area_Enemies ORDER BY areaID") or SAMPLE['area_enemies']
-    areas = query("SELECT areaID FROM Areas") or SAMPLE['areas']
-    enemies = query("SELECT enemyID FROM Enemies") or SAMPLE['enemies']
+    rows = query("SELECT * FROM Area_Enemies ORDER BY areaID") or []
+    areas = query("SELECT areaID FROM Areas") or []
+    enemies = query("SELECT enemyID FROM Enemies") or []
     return render_template('area_enemies.html', rows=rows, areas=areas, enemies=enemies)
 
 @app.route('/area_enemies/add', methods=['POST'])
@@ -359,7 +319,7 @@ def area_enemies_add():
     if execute("INSERT INTO Area_Enemies (areaID, enemyID) VALUES (%s, %s)", (areaID, enemyID)):
         flash('Link added.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('area_enemies'))
 
 @app.route('/area_enemies/delete', methods=['POST'])
@@ -369,14 +329,14 @@ def area_enemies_delete():
     if execute("DELETE FROM Area_Enemies WHERE areaID=%s AND enemyID=%s", (areaID, enemyID)):
         flash('Link removed.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('area_enemies'))
 
 @app.route('/enemy_abilities')
 def enemy_abilities():
-    rows = query("SELECT * FROM Enemy_Abilities ORDER BY enemyID") or SAMPLE['enemy_abilities']
-    enemies = query("SELECT enemyID FROM Enemies") or SAMPLE['enemies']
-    abilities = query("SELECT abilityID FROM Abilities") or SAMPLE['abilities']
+    rows = query("SELECT * FROM Enemy_Abilities ORDER BY enemyID") or []
+    enemies = query("SELECT enemyID FROM Enemies") or []
+    abilities = query("SELECT abilityID FROM Abilities") or []
     return render_template('enemy_abilities.html', rows=rows, enemies=enemies, abilities=abilities)
 
 @app.route('/enemy_abilities/add', methods=['POST'])
@@ -386,7 +346,7 @@ def enemy_abilities_add():
     if execute("INSERT INTO Enemy_Abilities (enemyID, abilityID) VALUES (%s, %s)", (enemyID, abilityID)):
         flash('Link added.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('enemy_abilities'))
 
 @app.route('/enemy_abilities/delete', methods=['POST'])
@@ -396,14 +356,14 @@ def enemy_abilities_delete():
     if execute("DELETE FROM Enemy_Abilities WHERE enemyID=%s AND abilityID=%s", (enemyID, abilityID)):
         flash('Link removed.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('enemy_abilities'))
 
 @app.route('/npc_abilities')
 def npc_abilities():
-    rows = query("SELECT * FROM NPC_Abilities ORDER BY npcID") or SAMPLE['npc_abilities']
-    npcs = query("SELECT npcID FROM NPCs") or SAMPLE['npcs']
-    abilities = query("SELECT abilityID FROM Abilities") or SAMPLE['abilities']
+    rows = query("SELECT * FROM NPC_Abilities ORDER BY npcID") or []
+    npcs = query("SELECT npcID FROM NPCs") or []
+    abilities = query("SELECT abilityID FROM Abilities") or []
     return render_template('npc_abilities.html', rows=rows, npcs=npcs, abilities=abilities)
 
 @app.route('/npc_abilities/add', methods=['POST'])
@@ -413,7 +373,7 @@ def npc_abilities_add():
     if execute("INSERT INTO NPC_Abilities (npcID, abilityID) VALUES (%s, %s)", (npcID, abilityID)):
         flash('Link added.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('npc_abilities'))
 
 @app.route('/npc_abilities/delete', methods=['POST'])
@@ -423,8 +383,8 @@ def npc_abilities_delete():
     if execute("DELETE FROM NPC_Abilities WHERE npcID=%s AND abilityID=%s", (npcID, abilityID)):
         flash('Link removed.', 'success')
     else:
-        flash('Could not connect to database. (UI demo mode)', 'warning')
+        flash('Could not connect to database.', 'error')
     return redirect(url_for('npc_abilities'))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=34567)
+    app.run(host='0.0.0.0', port=7890, debug=True)

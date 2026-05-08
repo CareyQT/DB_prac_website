@@ -9,12 +9,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg:        #0d0b10;
-      --bg2:       #13101a;
-      --bg3:       #1c1726;
-      --border:    #2e2540;
+      --bg:        #400f89;
+      --bg2:       #351872;
+      --bg3:       #5b3b9a;
+      --border:    #ffffff;
       --gold:      #c9a84c;
-      --gold-dim:  #8a6e30;
+      --gold-dim:  #dea935;
       --red:       #b04040;
       --red-dim:   #6e2828;
       --teal:      #4a9e8e;
@@ -22,7 +22,7 @@
       --purple:    #7a5fa8;
       --text:      #e8dfc8;
       --text-dim:  #9a8e7a;
-      --shadow:    rgba(0,0,0,0.6);
+      --shadow:    rgba(161, 23, 23, 0.6);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -89,7 +89,7 @@
     .nav-links a.active {
       color: var(--gold);
       border-bottom-color: var(--gold);
-      background: rgba(201,168,76,0.04);
+      background: rgba(255, 255, 255, 0.04);
     }
     .nav-sep { color: var(--border); padding: 1rem 0.2rem; font-size: 0.6rem; }
 
@@ -385,7 +385,7 @@
 
 <nav>
   <div class="nav-inner">
-    <a href="{{ url_for('index') }}" class="nav-brand">⚔ Tales From The Spiral</a>
+    <a href="{{ url_for('index') }}" class="nav-brand">Tales From The Spiral</a>
     <ul class="nav-links">
       <li><a href="{{ url_for('areas') }}" {% if request.endpoint == 'areas' %}class="active"{% endif %}>Areas</a></li>
       <li><a href="{{ url_for('hazards') }}" {% if request.endpoint == 'hazards' %}class="active"{% endif %}>Hazards</a></li>
