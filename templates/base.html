@@ -174,6 +174,12 @@
     tbody tr { transition: background 0.15s; }
     tbody tr:hover { background: rgba(122,95,168,0.07); }
 
+    .nav-reset {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
+
     /* ── BADGES ── */
     .badge {
       display: inline-block;
@@ -398,6 +404,13 @@
       <li><a href="{{ url_for('enemy_abilities') }}" {% if request.endpoint == 'enemy_abilities' %}class="active"{% endif %}>Enemy↔Abilities</a></li>
       <li><a href="{{ url_for('npc_abilities') }}" {% if request.endpoint == 'npc_abilities' %}class="active"{% endif %}>NPC↔Abilities</a></li>
     </ul>
+
+    <div class="nav-reset">
+      <form action="{{ url_for('reset') }}" method="POST"
+            onsubmit="return confirm('Reset the database? All data will be wiped and reseeded.');">
+        <button type="submit" class="btn btn-red btn-sm">↺ Reset DB</button>
+      </form>
+    </div>
   </div>
 </nav>
 

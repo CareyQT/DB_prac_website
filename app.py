@@ -52,6 +52,19 @@ def areas():
     rows = query("SELECT * FROM Areas ORDER BY areaLevel") or []
     return render_template('areas.html', areas=rows)
 
+@app.route("/reset", methods=["POST"])
+def reset():
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.callproc("ResetDatabase")   # calls your stored procedure
+    conn.commit()
+    
+    cursor.close()
+    conn.close()
+    flash('Database reset successfully.', 'success')
+    return render_template('index.html')
+
 @app.route('/areas/add', methods=['GET', 'POST'])
 def areas_add():
     if request.method == 'POST':
