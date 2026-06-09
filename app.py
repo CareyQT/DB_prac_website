@@ -7,6 +7,15 @@ import os
 app = Flask(__name__)
 app.secret_key = 'tales_from_the_spiral_secret'
 
+# AI citation - Code for the application files were created using a combination of AI tools and original work. 
+# Claude.ai provided the template for the python app. The CRUD operations were original work but the render template logic was created by claude.
+# the original prompt used to create the template was "Hello I need you to make a ui front end for the database that is described in the sql file that I attached" I then attached our DDL.sql file .
+# Microsoft copilot provided inline suggestions for code, for higher efficiency
+
+#The HTML templates for the app were created by claude with the minor exception of the area_hazards_form.html template which was created by me. 
+#The HTML templates were then modified and styled by me to fit the theme of the project.
+
+#For more information on the AI tools used, please see the README.md file in the project repository.
 
 def get_db():
     try:
@@ -57,7 +66,7 @@ def reset():
     conn = get_db()
     cursor = conn.cursor()
     
-    cursor.callproc("ResetDatabase")   # calls your stored procedure
+    cursor.callproc("ResetDatabase")  
     conn.commit()
     
     cursor.close()
@@ -101,7 +110,7 @@ def areas_delete(areaID):
         flash('Could not connect to database.', 'error')
     return redirect(url_for('areas'))
 
-# ─── HAZARDS ─────────────────────────────────────────────────────────────────
+
 
 @app.route('/hazards')
 def hazards():
@@ -144,7 +153,6 @@ def hazards_delete(hazardID):
         flash('Could not connect to database.', 'error')
     return redirect(url_for('hazards'))
 
-# ─── ENEMIES ─────────────────────────────────────────────────────────────────
 
 @app.route('/enemies')
 def enemies():
@@ -189,7 +197,7 @@ def enemies_delete(enemyID):
         flash('Could not connect to database.', 'error')
     return redirect(url_for('enemies'))
 
-# ─── ABILITIES ────────────────────────────────────────────────────────────────
+
 
 @app.route('/abilities')
 def abilities():
@@ -232,7 +240,7 @@ def abilities_delete(abilityID):
         flash('Could not connect to database.', 'error')
     return redirect(url_for('abilities'))
 
-# ─── NPCs ────────────────────────────────────────────────────────────────────
+
 
 @app.route('/npcs')
 def npcs():
@@ -289,7 +297,7 @@ def npcs_delete(npcID):
         flash('Could not connect to database.', 'error')
     return redirect(url_for('npcs'))
 
-# ─── INTERSECTION TABLES ──────────────────────────────────────────────────────
+
 
 @app.route('/area_hazards')
 def area_hazards():
