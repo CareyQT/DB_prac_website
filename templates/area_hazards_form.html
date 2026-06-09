@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Area ↔ Hazards — Tales From The Spiral{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1> {{ action }} Area ↔ Hazards</h1>
+    <div class="subtitle">edit a link between an area and a hazard</div>
+  </div>
+  <a href="{{ url_for('area_hazards') }}" class="btn btn-ghost">← Back to Area ↔ Hazards</a>
+</div>
+
+<div class="form-card">
+  <form method="POST">
+    <input type="hidden" name="oldAreaID" value="{{ orig_areaID }}"/>
+    <input type="hidden" name="oldHazardID" value="{{ orig_hazardID }}"/>
+    <div class="form-group">
+      <label for="areaID">Area ID</label>
+      <select name="areaID" id="areaID" required>
+        <option value="">— Select —</option>
+        {% for a in areas %}
+          <option value="{{ a.areaID }}">{{ a.areaID }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="hazardID">Hazard ID</label>
+      <select name="hazardID" id="hazardID" required>
+        <option value="">— Select —</option>
+        {% for h in hazards %}
+          <option value="{{ h.hazardID }}">{{ h.hazardID }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-gold">Edit Link </button>
+      <a href="{{ url_for('area_hazards') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

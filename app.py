@@ -318,6 +318,45 @@ def area_hazards_delete():
         flash('Could not connect to database.', 'error')
     return redirect(url_for('area_hazards'))
 
+@app.route('/area_hazards/edit', methods=['GET', 'POST'])
+def area_hazards_edit():
+    if request.method == 'POST':
+        oldAreaID = request.form['oldAreaID']
+        oldHazardID = request.form['oldHazardID']
+        areaID = request.form['areaID']
+        hazardID = request.form['hazardID']
+        if execute("UPDATE Area_Hazards SET areaID=%s, hazardID=%s WHERE areaID=%s AND hazardID=%s",
+                   (areaID, hazardID, oldAreaID, oldHazardID)):
+            flash('Link updated.', 'success')
+        else:
+            flash('Could not connect to database.', 'error')
+        return redirect(url_for('area_hazards'))
+
+    
+    orig_areaID = request.args.get('areaID')
+    orig_hazardID = request.args.get('hazardID')
+    areas = query("SELECT areaID FROM Areas") 
+    hazards = query("SELECT hazardID FROM Hazards")
+    return render_template('area_hazards_form.html',
+                           orig_areaID=orig_areaID,
+                           orig_hazardID=orig_hazardID,
+                           areas=areas,
+                           hazards=hazards)
+
+@app.route('/area_hazards/update', methods=['POST'])
+def area_hazards_update():
+
+    oldAreaID = request.form['oldAreaID']
+    oldHazardID = request.form['oldHazardID']
+    
+    areaID = request.form['areaID']
+    hazardID = request.form['hazardID']
+    if execute("UPDATE Area_Hazards SET areaID=%s, hazardID=%s WHERE areaID=%s AND hazardID=%s", (areaID, hazardID, oldAreaID, oldHazardID)):
+        flash('Link updated.', 'success')
+    else:
+        flash('Could not connect to database.', 'error')
+    return redirect(url_for('area_hazards'))
+
 @app.route('/area_enemies')
 def area_enemies():
     rows = query("SELECT * FROM Area_Enemies ORDER BY areaID") or []
